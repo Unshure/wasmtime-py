@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+import asyncio
 import ctypes
 from .. import _ffi as ffi, StoreContext, WasmtimeError
 from typing import Optional, Callable
@@ -41,3 +41,17 @@ def maybe_raise_last_exn() -> None:
     exn = LAST_EXCEPTION
     LAST_EXCEPTION = None
     raise exn
+
+
+async def poll_future(future: 'ctypes._Pointer[ffi.wasmtime_call_future_t]') -> None:
+    """
+    Poll a wasmtime_call_future_t until completion, yielding to the asyncio
+    event loop between polls.
+
+    The future is deleted when polling completes or on error.
+    """
+    try:
+        while not ffi.wasmtime_call_future_poll(future):
+            await asyncio.sleep(0)
+    finally:
+        ffi.wasmtime_call_future_delete(future)
