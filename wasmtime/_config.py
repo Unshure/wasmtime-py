@@ -289,3 +289,59 @@ class Config(Managed["ctypes._Pointer[ffi.wasm_config_t]"]):
         if not isinstance(enable, bool):
             raise TypeError('expected a bool')
         ffi.wasmtime_config_shared_memory_set(self.ptr(), enable)
+
+    @setter_property
+    def async_stack_size(self, size: int) -> None:
+        """
+        Configures the size of the stacks used for asynchronous execution.
+
+        The value cannot be less than max_wasm_stack. By default this is 2 MiB.
+        """
+
+        if not isinstance(size, int):
+            raise TypeError('expected an int')
+        ffi.wasmtime_config_async_stack_size_set(self.ptr(), size)
+
+    @setter_property
+    def concurrency_support(self, enable: bool) -> None:
+        """
+        Configures whether concurrent execution of WebAssembly is supported
+        within this store.
+        """
+
+        if not isinstance(enable, bool):
+            raise TypeError('expected a bool')
+        ffi.wasmtime_config_concurrency_support_set(self.ptr(), enable)
+
+    @setter_property
+    def wasm_component_model_async(self, enable: bool) -> None:
+        """
+        Configures whether the WebAssembly component-model async support
+        will be enabled.
+        """
+
+        if not isinstance(enable, bool):
+            raise TypeError('expected a bool')
+        ffi.wasmtime_config_wasm_component_model_async_set(self.ptr(), enable)
+
+    @setter_property
+    def wasm_component_model_async_builtins(self, enable: bool) -> None:
+        """
+        Configures whether async built-in intrinsics are enabled for the
+        component model.
+        """
+
+        if not isinstance(enable, bool):
+            raise TypeError('expected a bool')
+        ffi.wasmtime_config_wasm_component_model_async_builtins_set(self.ptr(), enable)
+
+    @setter_property
+    def wasm_component_model_async_stackful(self, enable: bool) -> None:
+        """
+        Configures whether stackful coroutine support is enabled for async
+        components.
+        """
+
+        if not isinstance(enable, bool):
+            raise TypeError('expected a bool')
+        ffi.wasmtime_config_wasm_component_model_async_stackful_set(self.ptr(), enable)

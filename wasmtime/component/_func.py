@@ -1,9 +1,9 @@
 from .. import _ffi as ffi, WasmtimeError, Storelike
 from ctypes import byref, pointer
 import ctypes
-from ._types import ValType, valtype_from_ptr, FuncType
-from typing import List, Tuple, Optional, Any
-from ._enter import enter_wasm
+from ._types import FuncType
+from typing import Any
+from ._enter import enter_wasm, poll_future, maybe_raise_last_exn
 
 
 class Func:
@@ -57,6 +57,64 @@ class Func:
             for i in range(n):
                 ffi.wasmtime_component_val_delete(byref(param_capi[i]))
 
+
+    async def call_async(self, store: Storelike, *params: Any) -> Any:
+        """
+        Invokes this function asynchronously with the given parameters.
+
+        This is the same as `__call__` except it is asynchronous, polling the
+        underlying future and yielding to the asyncio event loop between polls.
+        Only compatible with stores associated with an async config.
+        """
+        fty = self.type(store)
+        param_tys = fty.params
+        result_ty = fty.result
+        if len(params) != len(param_tys):
+            raise TypeError("wrong number of parameters provided: given %s, expected %s" %
+                                (len(params), len(param_tys)))
+        param_capi = (ffi.wasmtime_component_val_t * len(params))()
+        n = 0
+        try:
+            for (_name, ty), val in zip(param_tys, params):
+                ty.convert_to_c(store, val, pointer(param_capi[n]))
+                n += 1
+            result_space = None
+            result_capi = None
+            result_len = 0
+            if result_ty is not None:
+                result_space = ffi.wasmtime_component_val_t()
+                result_capi = byref(result_space)
+                result_len = 1
+
+            error_ptr = ctypes.POINTER(ffi.wasmtime_error_t)()
+            future = ffi.wasmtime_component_func_call_async(
+                byref(self._func),
+                store._context(),
+                param_capi,
+                n,
+                result_capi,
+                result_len,
+                byref(error_ptr))
+            if not future:
+                if error_ptr:
+                    raise WasmtimeError._from_ptr(error_ptr)
+                raise WasmtimeError("failed to create async call future")
+
+            await poll_future(future)
+
+            if error_ptr:
+                error = WasmtimeError._from_ptr(error_ptr)
+                maybe_raise_last_exn()
+                raise error
+
+            if result_space is None:
+                return None
+            assert(result_ty is not None)
+            return result_ty.convert_from_c(result_space)
+
+        finally:
+            for i in range(n):
+                ffi.wasmtime_component_val_delete(byref(param_capi[i]))
 
     def post_return(self, store: Storelike) -> None:
         """

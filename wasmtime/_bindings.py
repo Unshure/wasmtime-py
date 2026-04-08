@@ -2482,6 +2482,24 @@ _wasmtime_config_wasm_component_model_set.argtypes = [ctypes.POINTER(wasm_config
 def wasmtime_config_wasm_component_model_set(arg0: Any, arg1: Any) -> None:
     return _wasmtime_config_wasm_component_model_set(arg0, arg1)  # type: ignore
 
+_wasmtime_config_wasm_component_model_async_set = dll.wasmtime_config_wasm_component_model_async_set
+_wasmtime_config_wasm_component_model_async_set.restype = None
+_wasmtime_config_wasm_component_model_async_set.argtypes = [ctypes.POINTER(wasm_config_t), ctypes.c_bool]
+def wasmtime_config_wasm_component_model_async_set(arg0: Any, arg1: Any) -> None:
+    return _wasmtime_config_wasm_component_model_async_set(arg0, arg1)  # type: ignore
+
+_wasmtime_config_wasm_component_model_async_builtins_set = dll.wasmtime_config_wasm_component_model_async_builtins_set
+_wasmtime_config_wasm_component_model_async_builtins_set.restype = None
+_wasmtime_config_wasm_component_model_async_builtins_set.argtypes = [ctypes.POINTER(wasm_config_t), ctypes.c_bool]
+def wasmtime_config_wasm_component_model_async_builtins_set(arg0: Any, arg1: Any) -> None:
+    return _wasmtime_config_wasm_component_model_async_builtins_set(arg0, arg1)  # type: ignore
+
+_wasmtime_config_wasm_component_model_async_stackful_set = dll.wasmtime_config_wasm_component_model_async_stackful_set
+_wasmtime_config_wasm_component_model_async_stackful_set.restype = None
+_wasmtime_config_wasm_component_model_async_stackful_set.argtypes = [ctypes.POINTER(wasm_config_t), ctypes.c_bool]
+def wasmtime_config_wasm_component_model_async_stackful_set(arg0: Any, arg1: Any) -> None:
+    return _wasmtime_config_wasm_component_model_async_stackful_set(arg0, arg1)  # type: ignore
+
 _wasmtime_config_concurrency_support_set = dll.wasmtime_config_concurrency_support_set
 _wasmtime_config_concurrency_support_set.restype = None
 _wasmtime_config_concurrency_support_set.argtypes = [ctypes.POINTER(wasm_config_t), ctypes.c_bool]
@@ -4661,6 +4679,12 @@ _wasmtime_component_func_post_return.argtypes = [ctypes.POINTER(wasmtime_compone
 def wasmtime_component_func_post_return(func: Any, context: Any) -> ctypes._Pointer:
     return _wasmtime_component_func_post_return(func, context)  # type: ignore
 
+_wasmtime_component_func_call_async = dll.wasmtime_component_func_call_async
+_wasmtime_component_func_call_async.restype = ctypes.POINTER(wasmtime_call_future_t)
+_wasmtime_component_func_call_async.argtypes = [ctypes.POINTER(wasmtime_component_func_t), ctypes.POINTER(wasmtime_context_t), ctypes.POINTER(wasmtime_component_val_t), ctypes.c_size_t, ctypes.POINTER(wasmtime_component_val_t), ctypes.c_size_t, ctypes.POINTER(ctypes.POINTER(wasmtime_error_t))]
+def wasmtime_component_func_call_async(func: Any, context: Any, args: Any, args_size: Any, results: Any, results_size: Any, error_ret: Any) -> ctypes._Pointer:
+    return _wasmtime_component_func_call_async(func, context, args, args_size, results, results_size, error_ret)  # type: ignore
+
 class wasmtime_component_instance(ctypes.Structure):
     _fields_ = [
         ("store_id", ctypes.c_uint64),
@@ -4770,3 +4794,29 @@ _wasmtime_wat2wasm.restype = ctypes.POINTER(wasmtime_error_t)
 _wasmtime_wat2wasm.argtypes = [ctypes.POINTER(ctypes.c_char), ctypes.c_size_t, ctypes.POINTER(wasm_byte_vec_t)]
 def wasmtime_wat2wasm(wat: Any, wat_len: Any, ret: Any) -> ctypes._Pointer:
     return _wasmtime_wat2wasm(wat, wat_len, ret)  # type: ignore
+
+_wasmtime_component_linker_instantiate_async = dll.wasmtime_component_linker_instantiate_async
+_wasmtime_component_linker_instantiate_async.restype = ctypes.POINTER(wasmtime_call_future_t)
+_wasmtime_component_linker_instantiate_async.argtypes = [ctypes.POINTER(wasmtime_component_linker_t), ctypes.POINTER(wasmtime_context_t), ctypes.POINTER(wasmtime_component_t), ctypes.POINTER(wasmtime_component_instance_t), ctypes.POINTER(ctypes.POINTER(wasmtime_error_t))]
+def wasmtime_component_linker_instantiate_async(linker: Any, context: Any, component: Any, instance_out: Any, error_ret: Any) -> ctypes._Pointer:
+    return _wasmtime_component_linker_instantiate_async(linker, context, component, instance_out, error_ret)  # type: ignore
+
+wasmtime_component_func_async_callback_t = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.POINTER(wasmtime_context_t), ctypes.POINTER(wasmtime_component_func_type_t), ctypes.POINTER(wasmtime_component_val_t), ctypes.c_size_t, ctypes.POINTER(wasmtime_component_val_t), ctypes.c_size_t, ctypes.POINTER(ctypes.POINTER(wasmtime_error_t)), ctypes.POINTER(wasmtime_async_continuation_t))
+
+_wasmtime_component_linker_instance_add_func_async = dll.wasmtime_component_linker_instance_add_func_async
+_wasmtime_component_linker_instance_add_func_async.restype = ctypes.POINTER(wasmtime_error_t)
+_wasmtime_component_linker_instance_add_func_async.argtypes = [ctypes.POINTER(wasmtime_component_linker_instance_t), ctypes.POINTER(ctypes.c_char), ctypes.c_size_t, wasmtime_component_func_async_callback_t, ctypes.c_void_p, ctypes.CFUNCTYPE(None, ctypes.c_void_p)]
+def wasmtime_component_linker_instance_add_func_async(linker_instance: Any, name: Any, name_len: Any, callback: Any, data: Any, finalizer: Any) -> ctypes._Pointer:
+    return _wasmtime_component_linker_instance_add_func_async(linker_instance, name, name_len, callback, data, finalizer)  # type: ignore
+
+_wasmtime_component_linker_add_wasip2_async = dll.wasmtime_component_linker_add_wasip2_async
+_wasmtime_component_linker_add_wasip2_async.restype = ctypes.POINTER(wasmtime_error_t)
+_wasmtime_component_linker_add_wasip2_async.argtypes = [ctypes.POINTER(wasmtime_component_linker_t)]
+def wasmtime_component_linker_add_wasip2_async(linker: Any) -> ctypes._Pointer:
+    return _wasmtime_component_linker_add_wasip2_async(linker)  # type: ignore
+
+_wasmtime_component_linker_add_wasi_http_async = dll.wasmtime_component_linker_add_wasi_http_async
+_wasmtime_component_linker_add_wasi_http_async.restype = ctypes.POINTER(wasmtime_error_t)
+_wasmtime_component_linker_add_wasi_http_async.argtypes = [ctypes.POINTER(wasmtime_component_linker_t)]
+def wasmtime_component_linker_add_wasi_http_async(linker: Any) -> ctypes._Pointer:
+    return _wasmtime_component_linker_add_wasi_http_async(linker)  # type: ignore
