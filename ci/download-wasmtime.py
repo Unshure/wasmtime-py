@@ -11,7 +11,7 @@ import zipfile
 from pathlib import Path
 
 # set to "dev" to download the latest or pick a tag from
-# https://github.com/chaynabors/wasmtime/tags
+# https://github.com/unshure/wasmtime/tags
 WASMTIME_VERSION = "v45.0.0-async"
 
 
@@ -46,7 +46,7 @@ def main(platform, arch):
     else:
         raise RuntimeError("unknown platform: " + sys.platform)
 
-    url = 'https://github.com/chaynabors/wasmtime/releases/download/{}/'.format(version)
+    url = 'https://github.com/unshure/wasmtime/releases/download/{}/'.format(version)
     url += filename
     print('Download', url)
     dst = Path('wasmtime') / dirname / libname
